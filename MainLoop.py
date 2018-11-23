@@ -16,14 +16,14 @@ WHITE = (255, 255, 255, 255)
 # Initialize variables and load images
 FPS = 60
 grid = Grid(32, 32)
-offset = (5, 32)
-bomber_m = SpriteSheet("assets/BomberMovement.png", 32)
+offset = (0, 0)
+bomber_movement = SpriteSheet("assets/BomberMovement.png", 32, 6)
+bomber_idle1 = SpriteSheet("assets/Idle1.png", 5, 12)
+bomber_idle2 = SpriteSheet("assets/Idle2.png", 5, 12)
 border_sprite = Sprite("assets/Border.png")
 player1 = PlayerCharacter(hww, hwh, grid, 3)
-walking_frames = [24, 8, 16, 0]
-index = 0
-last_move = 0
-frame_interpolation = frame_interpolation_init = 7
+player2 = PlayerCharacter(hww+50, hwh+50, grid, 3)
+player3 = PlayerCharacter(hww-50, hwh-50, grid, 3)
 
 
 # Game events
@@ -48,51 +48,26 @@ def events():
         pygame.quit()
         sys.exit()
 
+    pygame.display.update()
 
-def redraw_game_window():
-    global walking_frames
+
+def redraw_game_elements():
     global offset
-    global index
-    global last_move
-    global frame_interpolation
 
-    # Window
+    # Order of displaying elements must be respected
     win.fill(BLACK)
-    # Stage
     border_sprite.draw(win, 0, 0)
-    # Bomber movement
-    if index+1 >= 8:
-        index = 0
-
-    if player1.is_moving():
-        if player1.moving[0]:
-            bomber_m.draw(win, player1.x, player1.y, walking_frames[0] + index, offset)
-            last_move = 31
-        elif player1.moving[1]:
-            bomber_m.draw(win, player1.x, player1.y, walking_frames[1] + index, offset)
-            last_move = walking_frames[1]
-        elif player1.moving[2]:
-            bomber_m.draw(win, player1.x, player1.y, walking_frames[2] + index, offset)
-            last_move = walking_frames[2]
-        elif player1.moving[3]:
-            bomber_m.draw(win, player1.x, player1.y, walking_frames[3] + index, offset)
-            last_move = walking_frames[3]
-        if frame_interpolation == 0:
-            index += 1
-            frame_interpolation = frame_interpolation_init
-        else:
-            frame_interpolation -= 1
-    else:
-        bomber_m.draw(win, player1.x, player1.y, last_move, offset)
+    player1.draw_player_movement(bomber_movement, win, offset)
+    player2.draw_player_anim(bomber_idle1, win, offset, 0, 4)
+    player3.draw_player_anim(bomber_idle2, win, offset, 0, 4)
 
     # Reference point
     pygame.draw.circle(win, WHITE, (hww, hwh), 2, 0)
-    pygame.display.update()
 
 
 run = True
 while run:
     clock.tick(FPS)
     events()
-    redraw_game_window()
+    redraw_game_elements()
 exit(0)
