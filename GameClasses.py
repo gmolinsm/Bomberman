@@ -31,6 +31,7 @@ class SpriteSheet:
 
         # This index controls the current frame of the animation
         self.index = 0
+
         self.frame_interpolation = self.frame_interpolation_init = interpolation
 
     def draw(self, surface, x, y, current_frame, offset=(0, 0)):
@@ -66,31 +67,38 @@ class Grid(object):
         self.cell_surface = pygame.Surface((self.cell_width, self.cell_height))
         self.cell_list = []
 
+        self.build_grid()
+
     def build_grid(self):
         for i in range(self.rows):
             for j in range(self.columns):
                 self.cell_list.append(Cell(j * self.cell_width, i * self.cell_height, self))
 
-    def draw_grid(self, sprite):
+    def draw_grid(self, sprite, surface):
         for i in range(self.cell_count):
-            sprite.draw(sprite.surface, self.cell_list[i].x, self.cell_list[i].y)
+            sprite.draw(surface, self.cell_list[i].x, self.cell_list[i].y)
+
+    def draw_cell(self, sprite, surface, index):
+        sprite.draw(surface, self.cell_list[index].x, self.cell_list[index].y)
 
 
 class Cell(object):
     def __init__(self, x, y, grid):
-        self.width = grid.cell_width
-        self.height = grid.cell_height
         self.x = x
         self.y = y
+        self.width = grid.cell_width
+        self.height = grid.cell_height
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
 
 class PlayerCharacter(object):
-    def __init__(self, x, y, grid, speed):
+    def __init__(self, x, y, grid, speed, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]):
         w = self.width = grid.cell_width
         h = self.height = grid.cell_height
         hw = int(w/2)
         hh = int(h/2)
         self.speed = speed
+
         if 0 < x - hw < win_width:
             self.x = x - hw
         else:
@@ -100,10 +108,11 @@ class PlayerCharacter(object):
         else:
             self.y = -hh
 
-        self.rect = (self.x, self.y, grid.width, grid.height)
+        self.rect = pygame.Rect(self.x, self.y, grid.width, grid.height)
         self.moving = [False, False, False, False]
         self.last_move = 0
         self.colliding = False
+        self.key_set = key_set
 
     def move_left(self):
         if self.x - self.speed > 0:
@@ -135,22 +144,29 @@ class PlayerCharacter(object):
 
     def is_moving(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and not self.colliding:
+        if keys[self.key_set[0]] and not self.colliding:
             self.moving = [True, False, False, False]
             return True
-        elif keys[pygame.K_RIGHT] and not self.colliding:
+        elif keys[self.key_set[1]] and not self.colliding:
             self.moving = [False, True, False, False]
             return True
-        elif keys[pygame.K_UP] and not self.colliding:
+        elif keys[self.key_set[2]] and not self.colliding:
             self.moving = [False, False, True, False]
             return True
-        elif keys[pygame.K_DOWN] and not self.colliding:
+        elif keys[self.key_set[3]] and not self.colliding:
             self.moving = [False, False, False, True]
             return True
         else:
             self.moving = [False, False, False, False]
             return False
-        
+
+    def is_colliding(self, element):
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        element.rect = pygame.Rect(element.x, element.y, element.width, element.height)
+        if self.rect.colliderect(element.rect):
+            return True
+        return False
+
     def draw_player_movement(self, spritesheet, surface, offset):
         walking_frames = [24, 8, 16, 0]
         
@@ -175,5 +191,5 @@ class PlayerCharacter(object):
             spritesheet.draw(surface, self.x, self.y, self.last_move, offset)
 
     def draw_player_anim(self, spritesheet, surface, offset, start, end):
-        spritesheet.draw(surface, self.x+50, self.y+50, spritesheet.index, offset)
+        spritesheet.draw(surface, self.x, self.y, spritesheet.index, offset)
         spritesheet.update_animation_frames(start, end)
