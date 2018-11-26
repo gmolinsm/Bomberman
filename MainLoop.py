@@ -15,7 +15,7 @@ WHITE = (255, 255, 255, 255)
 
 # Initialize variables and load images
 FPS = 60
-offset = (-9, -35)
+offset = (-3, -15)
 
 bomber_movement = SpriteSheet("assets/BomberMovement.png", 32, 6)
 bomber_idle1 = SpriteSheet("assets/Idle1.png", 5, 12)
@@ -26,9 +26,9 @@ grass_sprite = Sprite("assets/Grass.png")
 grid = Grid(40, 40)
 
 
-players = [PlayerCharacter(hww, hwh, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
-           PlayerCharacter(hww+100, hwh+100, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
-           PlayerCharacter(hww-100, hwh-100, grid, 3)]
+players = [PlayerCharacter(hww, hwh, grid, 3, "Player 1", [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
+           PlayerCharacter(hww+100, hwh+100, grid, 3, "Player 2", [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
+           PlayerCharacter(hww-100, hwh-100, grid, 3, "Player 3")]
 
 
 # Game events
@@ -42,15 +42,17 @@ def events():
 
     keys = pygame.key.get_pressed()
 
-    for i in range(0, len(players)):
+    for i in range(len(players)):
         if keys[players[i].key_set[0]]:
-            players[i].move_left()
+            players[i].check_move("left", players)
         elif keys[players[i].key_set[1]]:
-            players[i].move_right()
+            players[i].check_move("right", players)
         elif keys[players[i].key_set[2]]:
-            players[i].move_up()
+            players[i].check_move("up", players)
         elif keys[players[i].key_set[3]]:
-            players[i].move_down()
+            players[i].check_move("down", players)
+        else:
+            players[i].idle()
 
     if keys[pygame.K_ESCAPE]:
         run = False
@@ -69,11 +71,8 @@ def redraw_game_elements():
     grid.draw_grid(grass_sprite, win)
     grid.draw_cell(border_sprite, win, 34)
     players[0].draw_player_movement(bomber_movement, win, offset)
-    players[1].draw_player_anim(bomber_idle1, win, offset, 0, 4)
-
-    if players[0].is_colliding(players[1]):
-        print("Colliding")
-    players[2].draw_player_anim(bomber_idle2, win, offset, 0, 4)
+    players[1].draw_player_movement(bomber_movement, win, offset)
+    players[2].draw_player_movement(bomber_movement, win, offset)
 
     # Reference point
     pygame.draw.circle(win, WHITE, (hww-2, hwh-2), 2, 0)
@@ -84,4 +83,5 @@ while run:
     clock.tick(FPS)
     events()
     redraw_game_elements()
+    pygame.display.flip()
 exit(0)
