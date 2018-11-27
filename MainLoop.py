@@ -12,21 +12,18 @@ clock = pygame.time.Clock()
 BLACK = (0, 0, 0, 255)
 WHITE = (255, 255, 255, 255)
 
-
 # Initialize variables and load images
 FPS = 60
-offset = (0, -20)
+offset = (-9, -40)
 
-bomber_movement1 = SpriteSheet("assets/BomberMovement.png", 32, 6)
-bomber_movement2 = SpriteSheet("assets/BomberMovement.png", 32, 6)
-bomber_movement3 = SpriteSheet("assets/BomberMovement.png", 32, 6)
-bomber_idle1 = SpriteSheet("assets/Idle1.png", 5, 12)
-bomber_idle2 = SpriteSheet("assets/Idle2.png", 5, 12)
+bomber_movement = [SpriteSheet("assets/BomberMovement.png", 32, 6),
+                   SpriteSheet("assets/BomberMovement.png", 32, 6),
+                   SpriteSheet("assets/BomberMovement.png", 32, 6)]
+bomber_idle = [SpriteSheet("assets/Idle1.png", 5, 12), SpriteSheet("assets/Idle2.png", 5, 12)]
 border_sprite = Sprite("assets/Border.png")
 grass_sprite = Sprite("assets/Grass.png")
 
 grid = Grid(40, 40)
-
 
 players = [PlayerCharacter(hww, hwh, grid, 3, "Player 1", [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
            PlayerCharacter(hww+100, hwh+100, grid, 3, "Player 2", [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
@@ -36,7 +33,6 @@ players = [PlayerCharacter(hww, hwh, grid, 3, "Player 1", [pygame.K_a, pygame.K_
 # Game events
 def events():
     global players
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -44,15 +40,16 @@ def events():
 
     keys = pygame.key.get_pressed()
 
+    colliders = players + [grid.cell_list[32]]
     for i in range(len(players)):
         if keys[players[i].key_set[0]]:
-            players[i].check_move("left", players)
+            players[i].check_move("left", colliders)
         elif keys[players[i].key_set[1]]:
-            players[i].check_move("right", players)
+            players[i].check_move("right", colliders)
         elif keys[players[i].key_set[2]]:
-            players[i].check_move("up", players)
+            players[i].check_move("up", colliders)
         elif keys[players[i].key_set[3]]:
-            players[i].check_move("down", players)
+            players[i].check_move("down", colliders)
         else:
             players[i].idle()
 
@@ -67,15 +64,21 @@ def events():
 def redraw_game_elements():
     global offset
     global players
+    global bomber_movement
+
+    elements = players + [grid.cell_list[32]]
 
     # Order of displaying elements must be respected
     win.fill(BLACK)
     grid.draw_grid(grass_sprite, win)
-    grid.draw_cell(border_sprite, win, 34)
-    players[0].draw_player_movement(bomber_movement1, win, offset)
-    players[1].draw_player_movement(bomber_movement2, win, offset)
-    players[2].draw_player_movement(bomber_movement3, win, offset)
 
+    # Render the elements with greater "y" attribute first
+    elements.sort(key=lambda element: element.y, reverse=False)
+    for i in range(len(elements)):
+        if type(elements[i]) == PlayerCharacter:
+            elements[i].draw_player_movement(bomber_movement[i-1], win, offset)
+        elif type(elements[i]) == Cell:
+            elements[i].draw(border_sprite, win)
     # Reference point
     pygame.draw.circle(win, WHITE, (hww-2, hwh-2), 2, 0)
 

@@ -76,9 +76,6 @@ class Grid(object):
         for i in range(self.cell_count):
             sprite.draw(surface, self.cell_list[i].x, self.cell_list[i].y)
 
-    def draw_cell(self, sprite, surface, index):
-        sprite.draw(surface, self.cell_list[index].x, self.cell_list[index].y)
-
 
 class Cell(object):
     def __init__(self, x, y, grid):
@@ -88,4 +85,5 @@ class Cell(object):
         self.height = grid.cell_height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-
+    def draw(self, sprite, surface):
+        sprite.draw(surface, self.x, self.y)
