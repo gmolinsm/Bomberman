@@ -15,9 +15,11 @@ WHITE = (255, 255, 255, 255)
 
 # Initialize variables and load images
 FPS = 60
-offset = (-3, -15)
+offset = (0, -20)
 
-bomber_movement = SpriteSheet("assets/BomberMovement.png", 32, 6)
+bomber_movement1 = SpriteSheet("assets/BomberMovement.png", 32, 6)
+bomber_movement2 = SpriteSheet("assets/BomberMovement.png", 32, 6)
+bomber_movement3 = SpriteSheet("assets/BomberMovement.png", 32, 6)
 bomber_idle1 = SpriteSheet("assets/Idle1.png", 5, 12)
 bomber_idle2 = SpriteSheet("assets/Idle2.png", 5, 12)
 border_sprite = Sprite("assets/Border.png")
@@ -70,9 +72,9 @@ def redraw_game_elements():
     win.fill(BLACK)
     grid.draw_grid(grass_sprite, win)
     grid.draw_cell(border_sprite, win, 34)
-    players[0].draw_player_movement(bomber_movement, win, offset)
-    players[1].draw_player_movement(bomber_movement, win, offset)
-    players[2].draw_player_movement(bomber_movement, win, offset)
+    players[0].draw_player_movement(bomber_movement1, win, offset)
+    players[1].draw_player_movement(bomber_movement2, win, offset)
+    players[2].draw_player_movement(bomber_movement3, win, offset)
 
     # Reference point
     pygame.draw.circle(win, WHITE, (hww-2, hwh-2), 2, 0)
