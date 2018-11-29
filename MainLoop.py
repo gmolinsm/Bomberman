@@ -14,7 +14,7 @@ WHITE = (255, 255, 255, 255)
 
 # Initialize variables and load images
 FPS = 60
-offset = (-9, -40)
+offset = (-6, -40)
 
 bomber_movement = [SpriteSheet("assets/BomberMovement.png", 32, 6),
                    SpriteSheet("assets/BomberMovement.png", 32, 6),
@@ -22,27 +22,43 @@ bomber_movement = [SpriteSheet("assets/BomberMovement.png", 32, 6),
 bomber_idle = [SpriteSheet("assets/Idle1.png", 5, 12), SpriteSheet("assets/Idle2.png", 5, 12)]
 border_sprite = Sprite("assets/Border.png")
 grass_sprite = Sprite("assets/Grass.png")
+soft_wall_sprite = Sprite("assets/Soft_Wall.png")
+hard_wall_sprite = Sprite("assets/Hard_Wall.png")
+
+map_layout = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1,
+              1, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 1,
+              1, 3, 3, 0, 3, 3, 3, 3, 3, 0, 3, 3, 1,
+              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
+              1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 1,
+              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
+              1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 1,
+              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
+              1, 3, 3, 0, 3, 3, 3, 3, 3, 0, 3, 3, 1,
+              1, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 1,
+              1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 grid = Grid(40, 40)
-grid.build_grid()
+grid.build_grid(map_layout)
 
-players = [PlayerCharacter(hww, hwh, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
-           PlayerCharacter(hww+100, hwh+100, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
-           PlayerCharacter(hww-100, hwh-100, grid, 3)]
+players = [PlayerCharacter(grid.cell_list[14].x, grid.cell_list[14].y, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s], "Player 1"),
+           PlayerCharacter(hww, hwh, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k], "Player 2"),
+           PlayerCharacter(grid.cell_list[154].x, grid.cell_list[154].y, grid, 3, [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN], "Player 3")]
 
-grid.cell_list[40].collides = True
+colliders = players + grid.get_colliding_cells()
 
 # Game events
 def events():
     global players
+    global colliders
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
     keys = pygame.key.get_pressed()
-
-    colliders = players + grid.get_colliding_cells()
 
     for i in range(len(players)):
         if keys[players[i].key_set[0]]:
@@ -79,10 +95,20 @@ def redraw_game_elements():
     elements.sort(key=lambda element: element.y + element.height/2, reverse=False)
     for i in range(len(elements)):
         if type(elements[i]) == PlayerCharacter:
-            elements[i].draw_player_movement(bomber_movement[i % len(players)], win, offset)
+            if elements[i].tag == "Player 1":
+                elements[i].draw_player_movement(bomber_movement[0], win, offset)
+            elif elements[i].tag == "Player 2":
+                elements[i].draw_player_movement(bomber_movement[1], win, offset)
+            elif elements[i].tag == "Player 3":
+                elements[i].draw_player_movement(bomber_movement[2], win, offset)
         elif type(elements[i]) == Cell:
-            if elements[i].collides:
+            if elements[i].cell_type == 1:
                 elements[i].draw(border_sprite, win)
+            elif elements[i].cell_type == 2:
+                elements[i].draw(hard_wall_sprite, win)
+            elif elements[i].cell_type == 3:
+                elements[i].draw(soft_wall_sprite, win)
+
     # Reference point
     pygame.draw.rect(win, WHITE, players[0].rect)
     pygame.draw.rect(win, WHITE, players[1].rect)

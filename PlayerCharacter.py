@@ -1,24 +1,23 @@
 import pygame
-win_width = 480
-win_height = 480
+win_width = 520
+win_height = 520
 
 
 class PlayerCharacter(object):
-    def __init__(self, x, y, grid, speed, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]):
-        w = self.width = int(grid.cell_width/2)
-        h = self.height = int(grid.cell_height/2)
-        self.hw = int(w/2)
-        self.hh = int(h/2)
+    def __init__(self, x, y, grid, speed, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN], tag="Player"):
+        self.width = grid.cell_width - 10
+        self.height = grid.cell_height - 10
         self.speed = speed
+        self.tag = tag
 
-        if 0 < x - self.hw < win_width:
-            self.x = x - self.hw
+        if 0 < x < win_width:
+            self.x = x
         else:
-            self.x = -self.hw
-        if 0 < y - self.hh < win_height:
-            self.y = y - self.hh
+            self.x = 0
+        if 0 < y < win_height:
+            self.y = y
         else:
-            self.y = -self.hh
+            self.y = 0
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.move = [False, False, False, False]
@@ -104,10 +103,10 @@ class PlayerCharacter(object):
         return sides
 
     def determine_side(self, rect2):
-        margin = 10
+        margin = 20
         side = ""
         if self.x + margin > rect2.x + rect2.width \
-                and rect2.y <= self.y + self.height/2 <= rect2.y + rect2.height:
+                and rect2.y <= self.y + self.height / 2 <= rect2.y + rect2.height:
             side = "left"
         if self.x + self.width < rect2.x + margin \
                 and rect2.y <= self.y + self.height/2 <= rect2.y + rect2.height:

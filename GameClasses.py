@@ -65,17 +65,22 @@ class Grid(object):
         self.cell_surface = pygame.Surface((self.cell_width, self.cell_height))
         self.cell_list = []
 
-        self.build_grid()
-
-    def build_grid(self):
-        for i in range(self.rows):
+    def build_grid(self, map_layout):
+        for i in range(self.cell_count):
             for j in range(self.columns):
                 cell = Cell(j * self.cell_width, i * self.cell_height, self)
-
-                if i == 0 or i == self.rows-1 or j == 0 or j == self.columns-1:
-                    cell.collides = True
-
                 self.cell_list.append(cell)
+        for j in range(len(map_layout)):
+            if map_layout[j] == 1:
+                self.cell_list[j].cell_type = 1
+                self.cell_list[j].collides = True
+            elif map_layout[j] == 2:
+                self.cell_list[j].cell_type = 2
+                self.cell_list[j].collides = True
+            elif map_layout[j] == 3:
+                self.cell_list[j].cell_type = 3
+                self.cell_list[j].collides = True
+
 
     def draw_grid(self, sprite, surface):
         for i in range(self.cell_count):
@@ -96,6 +101,7 @@ class Cell(object):
         self.width = grid.cell_width
         self.height = grid.cell_height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.cell_type = 0
         self.collides = False
 
     def draw(self, sprite, surface):
