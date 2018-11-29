@@ -70,11 +70,23 @@ class Grid(object):
     def build_grid(self):
         for i in range(self.rows):
             for j in range(self.columns):
-                self.cell_list.append(Cell(j * self.cell_width, i * self.cell_height, self))
+                cell = Cell(j * self.cell_width, i * self.cell_height, self)
+
+                if i == 0 or i == self.rows-1 or j == 0 or j == self.columns-1:
+                    cell.collides = True
+
+                self.cell_list.append(cell)
 
     def draw_grid(self, sprite, surface):
         for i in range(self.cell_count):
             sprite.draw(surface, self.cell_list[i].x, self.cell_list[i].y)
+
+    def get_colliding_cells(self):
+        cells = []
+        for i in range(self.cell_count):
+            if self.cell_list[i].collides:
+                cells.append(self.cell_list[i])
+        return cells
 
 
 class Cell(object):
@@ -84,6 +96,7 @@ class Cell(object):
         self.width = grid.cell_width
         self.height = grid.cell_height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.collides = False
 
     def draw(self, sprite, surface):
         sprite.draw(surface, self.x, self.y)

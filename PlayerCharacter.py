@@ -4,13 +4,12 @@ win_height = 480
 
 
 class PlayerCharacter(object):
-    def __init__(self, x, y, grid, speed, tag="Player", key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]):
-        w = self.width = grid.cell_width/2
-        h = self.height = grid.cell_height/2
+    def __init__(self, x, y, grid, speed, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]):
+        w = self.width = int(grid.cell_width/2)
+        h = self.height = int(grid.cell_height/2)
         self.hw = int(w/2)
         self.hh = int(h/2)
         self.speed = speed
-        """self.tag = tag"""
 
         if 0 < x - self.hw < win_width:
             self.x = x - self.hw
@@ -21,40 +20,39 @@ class PlayerCharacter(object):
         else:
             self.y = -self.hh
 
-        self.rect = pygame.Rect(self.x, self.y, grid.width, grid.height)
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.move = [False, False, False, False]
-        self.last_move = False
         self.last_move_frame = 0
-        self.colliding = False
+        self.not_moving = False
         self.key_set = key_set
 
     def move_left(self):
         if self.x - self.speed > 0:
             self.x -= self.speed
-            self.colliding = False
+            self.not_moving = False
         else:
-            self.colliding = True
+            self.not_moving = True
 
     def move_right(self):
         if self.x + self.width + self.speed < win_width:
             self.x += self.speed
-            self.colliding = False
+            self.not_moving = False
         else:
-            self.colliding = True
+            self.not_moving = True
 
     def move_up(self):
         if self.y - self.speed > 0:
             self.y -= self.speed
-            self.colliding = False
+            self.not_moving = False
         else:
-            self.colliding = True
+            self.not_moving = True
 
     def move_down(self):
         if self.y + self.height + self.speed < win_height:
             self.y += self.speed
-            self.colliding = False
+            self.not_moving = False
         else:
-            self.colliding = True
+            self.not_moving = True
 
     def check_move(self, direction, elements):
 
@@ -72,26 +70,18 @@ class PlayerCharacter(object):
             self.move = [False, False, False, True]
             self.move_down()
         else:
-            self.colliding = True
+            self.not_moving = True
 
     def idle(self):
         self.move = [False, False, False, False]
 
     def get_collisions(self, element_list):
-        """p = []
-        for i in range(len(element_list)):
-            p.append(element_list[i])
-
-        for i in range(len(p)):
-            if p[i].tag == self.tag:
-                p.pop(i)
-                break"""
-
         # Update Rect of player and elements
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         elements = element_list
         for i in range(len(elements)):
-            elements[i].rect = pygame.Rect(elements[i].x, elements[i].y, elements[i].width, elements[i].height)
+            elements[i].rect = pygame.Rect(elements[i].x, elements[i].y,
+                                           elements[i].width, elements[i].height)
 
         # Return colliding Rects
         colliders = []
@@ -105,29 +95,35 @@ class PlayerCharacter(object):
             side = self.determine_side(colliders[k].rect)
             if side == "left":
                 sides[0] = True
-            if side == "right":
+            elif side == "right":
                 sides[1] = True
-            if side == "top":
+            elif side == "top":
                 sides[2] = True
-            if side == "bottom":
+            elif side == "bottom":
                 sides[3] = True
         return sides
 
     def determine_side(self, rect2):
         margin = 10
-        if self.x + margin > rect2.x + rect2.width:
-            return "left"
-        if self.x + self.width < rect2.x + margin:
-            return "right"
-        if self.y + margin > rect2.y + rect2.height:
-            return "top"
-        if self.y + self.width < rect2.y + margin:
-            return "bottom"
+        side = ""
+        if self.x + margin > rect2.x + rect2.width \
+                and rect2.y <= self.y + self.height/2 <= rect2.y + rect2.height:
+            side = "left"
+        if self.x + self.width < rect2.x + margin \
+                and rect2.y <= self.y + self.height/2 <= rect2.y + rect2.height:
+            side = "right"
+        if self.y + margin > rect2.y + rect2.height \
+                and rect2.x <= self.x + self.width/2 <= rect2.x + rect2.width:
+            side = "top"
+        if self.y + self.width < rect2.y + margin \
+                and rect2.x <= self.x + self.width/2 <= rect2.x + rect2.width:
+            side = "bottom"
+        return side
 
     def draw_player_movement(self, spritesheet, surface, offset):
         walking_frames = [24, 8, 16, 0]
 
-        if not self.move == [False, False, False, False] and not self.colliding:
+        if not self.move == [False, False, False, False] and not self.not_moving:
             if self.move[0]:
                 spritesheet.draw(surface, self.x, self.y, walking_frames[0] + spritesheet.index, offset)
                 spritesheet.update_animation_frames(walking_frames[0], walking_frames[0]+7)

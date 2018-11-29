@@ -24,11 +24,13 @@ border_sprite = Sprite("assets/Border.png")
 grass_sprite = Sprite("assets/Grass.png")
 
 grid = Grid(40, 40)
+grid.build_grid()
 
-players = [PlayerCharacter(hww, hwh, grid, 3, "Player 1", [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
-           PlayerCharacter(hww+100, hwh+100, grid, 3, "Player 2", [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
-           PlayerCharacter(hww-100, hwh-100, grid, 3, "Player 3")]
+players = [PlayerCharacter(hww, hwh, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]),
+           PlayerCharacter(hww+100, hwh+100, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k]),
+           PlayerCharacter(hww-100, hwh-100, grid, 3)]
 
+grid.cell_list[40].collides = True
 
 # Game events
 def events():
@@ -40,7 +42,8 @@ def events():
 
     keys = pygame.key.get_pressed()
 
-    colliders = players + [grid.cell_list[32]]
+    colliders = players + grid.get_colliding_cells()
+
     for i in range(len(players)):
         if keys[players[i].key_set[0]]:
             players[i].check_move("left", colliders)
@@ -66,21 +69,24 @@ def redraw_game_elements():
     global players
     global bomber_movement
 
-    elements = players + [grid.cell_list[32]]
+    elements = players + grid.cell_list
 
     # Order of displaying elements must be respected
     win.fill(BLACK)
     grid.draw_grid(grass_sprite, win)
 
     # Render the elements with greater "y" attribute first
-    elements.sort(key=lambda element: element.y, reverse=False)
+    elements.sort(key=lambda element: element.y + element.height/2, reverse=False)
     for i in range(len(elements)):
         if type(elements[i]) == PlayerCharacter:
-            elements[i].draw_player_movement(bomber_movement[i-1], win, offset)
+            elements[i].draw_player_movement(bomber_movement[i % len(players)], win, offset)
         elif type(elements[i]) == Cell:
-            elements[i].draw(border_sprite, win)
+            if elements[i].collides:
+                elements[i].draw(border_sprite, win)
     # Reference point
-    pygame.draw.circle(win, WHITE, (hww-2, hwh-2), 2, 0)
+    pygame.draw.rect(win, WHITE, players[0].rect)
+    pygame.draw.rect(win, WHITE, players[1].rect)
+    pygame.draw.rect(win, WHITE, players[2].rect)
 
 
 run = True
