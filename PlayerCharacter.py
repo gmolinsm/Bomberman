@@ -104,18 +104,27 @@ class PlayerCharacter(object):
 
     def determine_side(self, rect2):
         margin = 20
+        border_margin = 5
         side = ""
         if self.x + margin > rect2.x + rect2.width \
-                and rect2.y <= self.y + self.height / 2 <= rect2.y + rect2.height:
+                and (rect2.y + border_margin <= self.y <= rect2.y + rect2.height - border_margin
+                     or rect2.y + border_margin <= self.y + self.height <= rect2.y + rect2.height - border_margin
+                     or rect2.y + border_margin <= self.y + self.height/2 <= rect2.y + rect2.height - border_margin):
             side = "left"
         if self.x + self.width < rect2.x + margin \
-                and rect2.y <= self.y + self.height/2 <= rect2.y + rect2.height:
+                and (rect2.y + border_margin <= self.y <= rect2.y + rect2.height - border_margin
+                     or rect2.y + border_margin <= self.y + self.height <= rect2.y + rect2.height - border_margin
+                     or rect2.y + border_margin <= self.y + self.height / 2 <= rect2.y + rect2.height - border_margin):
             side = "right"
         if self.y + margin > rect2.y + rect2.height \
-                and rect2.x <= self.x + self.width/2 <= rect2.x + rect2.width:
+                and (rect2.x + border_margin <= self.x <= rect2.x + rect2.width - border_margin
+                     or rect2.x + border_margin <= self.x + self.width <= rect2.x + rect2.width - border_margin
+                     or rect2.x + border_margin <= self.x + self.width / 2 <= rect2.x + rect2.width - border_margin):
             side = "top"
         if self.y + self.width < rect2.y + margin \
-                and rect2.x <= self.x + self.width/2 <= rect2.x + rect2.width:
+                and (rect2.x + border_margin <= self.x <= rect2.x + rect2.width - border_margin
+                     or rect2.x + border_margin <= self.x + self.width <= rect2.x + rect2.width - border_margin
+                     or rect2.x + border_margin <= self.x + self.width / 2 <= rect2.x + rect2.width - border_margin):
             side = "bottom"
         return side
 

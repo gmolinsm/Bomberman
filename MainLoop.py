@@ -42,11 +42,9 @@ map_layout = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 grid = Grid(40, 40)
 grid.build_grid(map_layout)
 
-players = [PlayerCharacter(grid.cell_list[14].x, grid.cell_list[14].y, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s], "Player 1"),
-           PlayerCharacter(hww, hwh, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k], "Player 2"),
+players = [PlayerCharacter(grid.cell_list[72].x, grid.cell_list[72].y, grid, 3, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s], "Player 1"),
+           PlayerCharacter(grid.cell_list[85].x, grid.cell_list[85].y, grid, 3, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k], "Player 2"),
            PlayerCharacter(grid.cell_list[154].x, grid.cell_list[154].y, grid, 3, [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN], "Player 3")]
-
-colliders = players + grid.get_colliding_cells()
 
 # Game events
 def events():
@@ -58,6 +56,7 @@ def events():
             pygame.quit()
             sys.exit()
 
+    colliders = players + grid.get_colliding_cells()
     keys = pygame.key.get_pressed()
 
     for i in range(len(players)):
@@ -112,7 +111,6 @@ def redraw_game_elements():
     # Reference point
     pygame.draw.rect(win, WHITE, players[0].rect)
     pygame.draw.rect(win, WHITE, players[1].rect)
-    pygame.draw.rect(win, WHITE, players[2].rect)
 
 
 run = True

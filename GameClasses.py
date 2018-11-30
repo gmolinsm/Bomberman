@@ -81,7 +81,6 @@ class Grid(object):
                 self.cell_list[j].cell_type = 3
                 self.cell_list[j].collides = True
 
-
     def draw_grid(self, sprite, surface):
         for i in range(self.cell_count):
             sprite.draw(surface, self.cell_list[i].x, self.cell_list[i].y)
@@ -106,3 +105,17 @@ class Cell(object):
 
     def draw(self, sprite, surface):
         sprite.draw(surface, self.x, self.y)
+
+
+class Bomb(object):
+    def __init__(self, cell, time):
+        self.x = cell.x
+        self.y = cell.y
+        self.width = int(cell.width/2)
+        self.height = int(cell.height/2)
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.time = time
+
+    def draw_placed(self, spritesheet, surface, offset, start, end):
+        spritesheet.draw(surface, self.x, self.y, spritesheet.index, offset)
+        spritesheet.update_animation_frames(start, end)
