@@ -1,4 +1,6 @@
-from PlayerCharacter import *
+import pygame
+win_width = 520
+win_height = 520
 
 
 class Sprite:
@@ -66,10 +68,12 @@ class Grid(object):
         self.cell_list = []
 
     def build_grid(self, map_layout):
+        index = 0
         for i in range(self.cell_count):
             for j in range(self.columns):
-                cell = Cell(j * self.cell_width, i * self.cell_height, self)
+                cell = Cell(j * self.cell_width, i * self.cell_height, self, index)
                 self.cell_list.append(cell)
+                index += 1
         for j in range(len(map_layout)):
             if map_layout[j] == 1:
                 self.cell_list[j].cell_type = 1
@@ -94,12 +98,13 @@ class Grid(object):
 
 
 class Cell(object):
-    def __init__(self, x, y, grid):
+    def __init__(self, x, y, grid, index):
         self.x = x
         self.y = y
         self.width = grid.cell_width
         self.height = grid.cell_height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.index = index
         self.cell_type = 0
         self.collides = False
 
@@ -108,14 +113,38 @@ class Cell(object):
 
 
 class Bomb(object):
-    def __init__(self, cell, time):
+    def __init__(self, cell, start, pre_spritesheet, explosion_spritesheet):
+        self.cell = cell
         self.x = cell.x
         self.y = cell.y
-        self.width = int(cell.width/2)
-        self.height = int(cell.height/2)
+        self.width = cell.width
+        self.height = cell.height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.time = time
+        self.pre_explosion = SpriteSheet(pre_spritesheet[0], pre_spritesheet[1], pre_spritesheet[2])
+        self.explosion = SpriteSheet(explosion_spritesheet[0], explosion_spritesheet[1], explosion_spritesheet[2])
+        self.timer = start + 3000
+        self.radius = 3
+        self.exploded = False
 
-    def draw_placed(self, spritesheet, surface, offset, start, end):
-        spritesheet.draw(surface, self.x, self.y, spritesheet.index, offset)
+    def draw(self, spritesheet, surface, start, end):
+        spritesheet.draw(surface, self.x, self.y, spritesheet.index)
         spritesheet.update_animation_frames(start, end)
+
+    def explode(self, grid, players):
+        self.expand_explosion("grid.cell_list[self.cell.index - i]", grid, players)
+        self.expand_explosion("grid.cell_list[self.cell.index + i]", grid, players)
+        self.expand_explosion("grid.cell_list[self.cell.index - grid.columns * i]", grid, players)
+        self.expand_explosion("grid.cell_list[self.cell.index + grid.columns * i]", grid, players)
+
+    def expand_explosion(self, cell_index, grid, players):
+        for i in range(1, self.radius):
+            cell = eval(cell_index)
+            if cell.cell_type == 3:
+                cell.cell_type = 0
+                cell.collides = False
+            elif cell.cell_type == 0:
+                for j in range(len(players)):
+                    if cell.rect.colliderect(players[j].rect):
+                        players[j].lives -= 1
+            else:
+                break
