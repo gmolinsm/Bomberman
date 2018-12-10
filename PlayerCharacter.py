@@ -2,13 +2,16 @@ from GameClasses import *
 
 
 class PlayerCharacter(object):
-    def __init__(self, x, y, movement, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], tag="Player"):
-        self.width = 30
-        self.height = 30
+    def __init__(self, x, y, spritesheets, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], tag="Player"):
+        self.width = 25
+        self.height = 25
         self.lives = 1
         self.speed = 3
         self.tag = tag
-        self.spritesheet = SpriteSheet(movement[0], movement[1], movement[2])
+        self.movement = SpriteSheet(spritesheets[0][0], spritesheets[0][1], spritesheets[0][2])
+        self.waiting1 = SpriteSheet(spritesheets[1][0], spritesheets[1][1], spritesheets[1][2])
+        self.waiting2 = SpriteSheet(spritesheets[2][0], spritesheets[2][1], spritesheets[2][2])
+        self.death = SpriteSheet(spritesheets[3][0], spritesheets[3][1], spritesheets[3][2])
 
         if 0 < x < win_width:
             self.x = x
@@ -139,25 +142,25 @@ class PlayerCharacter(object):
 
         if not self.move == [False, False, False, False] and not self.not_moving:
             if self.move[0]:
-                self.spritesheet.draw(surface, self.x, self.y, walking_frames[0] + self.spritesheet.index, offset)
-                self.spritesheet.update_animation_frames(walking_frames[0], walking_frames[0]+7)
+                self.movement.draw(surface, self.x, self.y, walking_frames[0] + self.movement.index, offset)
+                self.movement.update_animation_frames(walking_frames[0], walking_frames[0]+7)
                 self.last_move_frame = 31
             elif self.move[1]:
-                self.spritesheet.draw(surface, self.x, self.y, walking_frames[1] + self.spritesheet.index, offset)
-                self.spritesheet.update_animation_frames(walking_frames[1], walking_frames[1]+7)
+                self.movement.draw(surface, self.x, self.y, walking_frames[1] + self.movement.index, offset)
+                self.movement.update_animation_frames(walking_frames[1], walking_frames[1]+7)
                 self.last_move_frame = walking_frames[1]
             elif self.move[2]:
-                self.spritesheet.draw(surface, self.x, self.y, walking_frames[2] + self.spritesheet.index, offset)
-                self.spritesheet.update_animation_frames(walking_frames[2], walking_frames[2]+7)
+                self.movement.draw(surface, self.x, self.y, walking_frames[2] + self.movement.index, offset)
+                self.movement.update_animation_frames(walking_frames[2], walking_frames[2]+7)
                 self.last_move_frame = walking_frames[2]
             elif self.move[3]:
-                self.spritesheet.draw(surface, self.x, self.y, walking_frames[3] + self.spritesheet.index, offset)
-                self.spritesheet.update_animation_frames(walking_frames[3], walking_frames[3]+7)
+                self.movement.draw(surface, self.x, self.y, walking_frames[3] + self.movement.index, offset)
+                self.movement.update_animation_frames(walking_frames[3], walking_frames[3]+7)
                 self.last_move_frame = walking_frames[3]
         else:
-            self.spritesheet.draw(surface, self.x, self.y, self.last_move_frame, offset)
+            self.movement.draw(surface, self.x, self.y, self.last_move_frame, offset)
 
-    def draw_player_anim(self, surface, spritesheet, offset, start, end):
+    def draw_player_anim(self, spritesheet, surface, offset, start, end):
         spritesheet.draw(surface, self.x, self.y, spritesheet.index, offset)
         spritesheet.update_animation_frames(start, end)
 

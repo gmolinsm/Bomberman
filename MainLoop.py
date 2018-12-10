@@ -1,58 +1,38 @@
 from PlayerCharacter import *
 import sys
+import textwrap
 
 pygame.init()
-hww = int(win_width/2)
-hwh = int(win_height/2)
 win = pygame.display.set_mode((win_width, win_height))
 pygame.display.set_caption("BomberMan")
 clock = pygame.time.Clock()
 
-# Some colors
-BLACK = (0, 0, 0, 255)
-WHITE = (255, 255, 255, 255)
+title = pygame.font.Font("assets/Fonts/Bungee-Regular.ttf", 40)
+tag = pygame.font.Font("assets/Fonts/FjallaOne-Regular.ttf", 20)
 
-# Initialize variables and load sprites
-FPS = 60
-offset = (-6, -30)
-
-bomber_movement = ["assets/BomberMovement.png", 32, 6]
-bomber_idle1 = ["assets/Idle1.png", 5, 12]
-bomber_idle2 = ["assets/Idle2.png", 5, 12]
-bomb_pre_explosion = ["assets/Bomb_pre_explosion.png", 5, 15]
-bomb_explosion = ["assets/Bomb_explosion.png", 5, 5]
 border_sprite = Sprite("assets/Border.png")
 grass_sprite = Sprite("assets/Grass.png")
 soft_wall_sprite = Sprite("assets/Soft_Wall.png")
 hard_wall_sprite = Sprite("assets/Hard_Wall.png")
 
-map_layout = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-              1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1,
-              1, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 1,
-              1, 3, 3, 0, 3, 3, 3, 3, 3, 0, 3, 3, 1,
-              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
-              1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 1,
-              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
-              1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 1,
-              1, 3, 2, 3, 2, 0, 2, 0, 2, 3, 2, 3, 1,
-              1, 3, 3, 0, 3, 3, 3, 3, 3, 0, 3, 3, 1,
-              1, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 1,
-              1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1,
-              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 grid = Grid(40, 40)
-grid.build_grid(map_layout)
+grid.build_grid(map_layout, explosions)
 
-players = [PlayerCharacter(grid.cell_list[72].x, grid.cell_list[72].y, bomber_movement, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s, pygame.K_e], "Player 1"),
-           PlayerCharacter(grid.cell_list[85].x, grid.cell_list[85].y, bomber_movement, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k, pygame.K_u], "Player 2"),
-           PlayerCharacter(grid.cell_list[154].x, grid.cell_list[154].y, bomber_movement, [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], "Player 3")]
+players = [PlayerCharacter(grid.cell_list[14].x, grid.cell_list[14].y, player_sprites, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s, pygame.K_e], "Player 1"),
+           PlayerCharacter(grid.cell_list[24].x, grid.cell_list[24].y, player_sprites, [pygame.K_f, pygame.K_h, pygame.K_t, pygame.K_g, pygame.K_y], "Player 2"),
+           PlayerCharacter(grid.cell_list[144].x, grid.cell_list[144].y, player_sprites, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k, pygame.K_u], "Player 3"),
+           PlayerCharacter(grid.cell_list[154].x, grid.cell_list[154].y, player_sprites, [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], "Player 4")]
 bombs = []
+colliding_cells = grid.get_colliding_cells()
 
 
 # Game events
 def events():
     global players
     global bombs
+    global colliding_cells
+    global explosions
     current_time = pygame.time.get_ticks()
 
     for event in pygame.event.get():
@@ -61,9 +41,9 @@ def events():
             sys.exit()
 
     # Create a list of colliders to feed into the functions
-    colliders = players + grid.get_colliding_cells() + bombs
+    colliders = colliding_cells
 
-    # Check for user input
+    # Player movement events
     keys = pygame.key.get_pressed()
     for i in range(len(players)):
         if keys[players[i].key_set[0]]:
@@ -83,29 +63,36 @@ def events():
                 if bombs[j].cell == pos:
                     pos = None
             if pos is not None:
-                bombs.append(Bomb(pos, pygame.time.get_ticks(), bomb_pre_explosion, bomb_explosion))
+                bombs.append(Bomb(pos, pygame.time.get_ticks(), explosions))
 
     if keys[pygame.K_ESCAPE]:
         run = False
         pygame.quit()
         sys.exit()
 
-    pygame.display.update()
-
-    # Explode and remove bombs
-    for i in range(len(bombs)):
-        if bombs[i].timer - 500 <= current_time:
-            bombs[i].exploded = True
-        if bombs[i].timer <= current_time:
-            bombs[i].explode(grid, players)
-            bombs.pop(i)
-            break
-
-    # Check for player lives
+    # Player general events
     for i in range(len(players)):
         if players[i].lives <= 0:
-            players.pop(i)
-            break
+            if players[i].death.count >= 1:
+                players.pop(i)
+                break
+            else:
+                players[i].speed = 0
+
+        if len(players) == 1:
+            message = str(players[i].tag) + " WINS!"
+            text(win, title, message, YELLOW)
+
+    # Bomb events
+    for i in range(len(bombs)):
+        if bombs[i].timer < current_time:
+            if not bombs[i].exploded:
+                bombs[i].exploded = True
+                bombs[i].explode(grid, players, explosions)
+            colliding_cells = grid.get_colliding_cells()
+            if bombs[i].explosion.count >= 1:
+                bombs.pop(i)
+                break
 
 
 def redraw_game_elements():
@@ -123,27 +110,82 @@ def redraw_game_elements():
     elements.sort(key=lambda element: element.y + element.height/2, reverse=False)
     for i in range(len(elements)):
         if type(elements[i]) == PlayerCharacter:
+            if elements[i].lives > 0:
                 elements[i].draw_player_movement(win, offset)
-        elif type(elements[i]) == Cell:
-            if elements[i].cell_type == 1:
+            else:
+                if elements[i].death.count < 1:
+                    elements[i].draw_player_anim(elements[i].death, win, offset, 0, 4)
+        elif type(elements[i]) == Ground:
+            if elements[i].destroyed:
+                if elements[i].destroyed_spritesheet.count < 1:
+                    elements[i].draw_anim(elements[i].destroyed_spritesheet, win, 0, 6)
+                else:
+                    elements[i].destroyed = False
+            if not elements[i].collides and not elements[i].destroyed:
+                if elements[i].flame_type == "left_end":
+                    if elements[i].flames_left_end.count < 1:
+                        elements[i].draw_anim(elements[i].flames_left_end, win, 0, 4)
+                    else:
+                        elements[i].flames_left_end.count = 0
+                        elements[i].flame_type = ""
+                if elements[i].flame_type == "right_end":
+                    if elements[i].flames_right_end.count < 1:
+                        elements[i].draw_anim(elements[i].flames_right_end, win, 0, 4)
+                    else:
+                        elements[i].flames_right_end.count = 0
+                        elements[i].flame_type = ""
+                if elements[i].flame_type == "top_end":
+                    if elements[i].flames_top_end.count < 1:
+                        elements[i].draw_anim(elements[i].flames_top_end, win, 0, 4)
+                    else:
+                        elements[i].flames_top_end.count = 0
+                        elements[i].flame_type = ""
+                if elements[i].flame_type == "bottom_end":
+                    if elements[i].flames_bottom_end.count < 1:
+                        elements[i].draw_anim(elements[i].flames_bottom_end, win, 0, 4)
+                    else:
+                        elements[i].flames_bottom_end.count = 0
+                        elements[i].flame_type = ""
+                if elements[i].flame_type == "mid_horizontal":
+                    if elements[i].flames_middle_horizontal.count < 1:
+                        elements[i].draw_anim(elements[i].flames_middle_horizontal, win, 0, 4)
+                    else:
+                        elements[i].flames_middle_horizontal.count = 0
+                        elements[i].flame_type = ""
+                if elements[i].flame_type == "mid_vertical":
+                    if elements[i].flames_middle_vertical.count < 1:
+                        elements[i].draw_anim(elements[i].flames_middle_vertical, win, 0, 4)
+                    else:
+                        elements[i].flames_middle_vertical.count = 0
+                        elements[i].flame_type = ""
+        elif type(elements[i]) == Wall:
+
+            if elements[i].type == 0:
                 elements[i].draw(border_sprite, win)
-            elif elements[i].cell_type == 2:
+            elif elements[i].type == 1:
                 elements[i].draw(hard_wall_sprite, win)
-            elif elements[i].cell_type == 3:
+            elif elements[i].type == 2:
                 elements[i].draw(soft_wall_sprite, win)
         elif type(elements[i]) == Bomb:
             if not elements[i].exploded:
-                elements[i].draw(elements[i].pre_explosion, win, 0, 4)
+                elements[i].draw_anim(elements[i].pre_explosion, win, 0, 4)
             elif elements[i].exploded:
-                elements[i].draw(elements[i].explosion, win, 0, 4)
+                if elements[i].explosion.count < 1:
+                    elements[i].draw_anim(elements[i].explosion, win, 0, 4)
 
     # Reference point
+
+
+def text(surface, font, message, color):
+    screen_text = font.render(message, True, color)
+    surface.blit(screen_text, (hww - screen_text.get_rect().width/2, hwh - screen_text.get_rect().height/2))
 
 
 run = True
 while run:
     clock.tick(FPS)
-    events()
     redraw_game_elements()
+    events()
+    pygame.display.update()
     pygame.display.flip()
 exit(0)
