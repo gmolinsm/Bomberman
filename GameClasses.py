@@ -1,4 +1,6 @@
-from Config import *
+import pygame
+win_width = 520
+win_height = 520
 
 
 class Sprite:

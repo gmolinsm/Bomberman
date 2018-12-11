@@ -1,38 +1,15 @@
-from PlayerCharacter import *
+from Config import *
 import sys
-import textwrap
 
 pygame.init()
 win = pygame.display.set_mode((win_width, win_height))
 pygame.display.set_caption("BomberMan")
 clock = pygame.time.Clock()
 
-title = pygame.font.Font("assets/Fonts/Bungee-Regular.ttf", 40)
-tag = pygame.font.Font("assets/Fonts/FjallaOne-Regular.ttf", 20)
-
-border_sprite = Sprite("assets/Border.png")
-grass_sprite = Sprite("assets/Grass.png")
-soft_wall_sprite = Sprite("assets/Soft_Wall.png")
-hard_wall_sprite = Sprite("assets/Hard_Wall.png")
-
-
-grid = Grid(40, 40)
-grid.build_grid(map_layout, explosions)
-
-players = [PlayerCharacter(grid.cell_list[14].x, grid.cell_list[14].y, player_sprites, [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s, pygame.K_e], "Player 1"),
-           PlayerCharacter(grid.cell_list[24].x, grid.cell_list[24].y, player_sprites, [pygame.K_f, pygame.K_h, pygame.K_t, pygame.K_g, pygame.K_y], "Player 2"),
-           PlayerCharacter(grid.cell_list[144].x, grid.cell_list[144].y, player_sprites, [pygame.K_j, pygame.K_l, pygame.K_i, pygame.K_k, pygame.K_u], "Player 3"),
-           PlayerCharacter(grid.cell_list[154].x, grid.cell_list[154].y, player_sprites, [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], "Player 4")]
-bombs = []
-colliding_cells = grid.get_colliding_cells()
-
 
 # Game events
 def events():
-    global players
-    global bombs
     global colliding_cells
-    global explosions
     current_time = pygame.time.get_ticks()
 
     for event in pygame.event.get():
@@ -80,6 +57,7 @@ def events():
                 players[i].speed = 0
 
         if len(players) == 1:
+            win.fill(BLACK)
             message = str(players[i].tag) + " WINS!"
             text(win, title, message, YELLOW)
 
@@ -96,10 +74,6 @@ def events():
 
 
 def redraw_game_elements():
-    global offset
-    global players
-    global bomber_movement
-
     elements = players + grid.cell_list + bombs
 
     # Order of displaying elements must be respected
@@ -174,7 +148,7 @@ def redraw_game_elements():
                     elements[i].draw_anim(elements[i].explosion, win, 0, 4)
 
     # Reference point
-
+    pygame.draw.rect(win, WHITE, players[0].rect)
 
 def text(surface, font, message, color):
     screen_text = font.render(message, True, color)

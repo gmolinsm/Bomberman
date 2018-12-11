@@ -3,8 +3,8 @@ from GameClasses import *
 
 class PlayerCharacter(object):
     def __init__(self, x, y, spritesheets, key_set=[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE], tag="Player"):
-        self.width = 25
-        self.height = 25
+        self.width = 28
+        self.height = 28
         self.lives = 1
         self.speed = 3
         self.tag = tag
@@ -158,7 +158,12 @@ class PlayerCharacter(object):
                 self.movement.update_animation_frames(walking_frames[3], walking_frames[3]+7)
                 self.last_move_frame = walking_frames[3]
         else:
-            self.movement.draw(surface, self.x, self.y, self.last_move_frame, offset)
+            if self.last_move_frame == 31:
+                self.movement.draw(surface, self.x, self.y, self.last_move_frame, (offset[0] + 7, offset[1]))
+            elif self.last_move_frame == walking_frames[1]:
+                self.movement.draw(surface, self.x, self.y, self.last_move_frame, (offset[0] - 5, offset[1]))
+            else:
+                self.movement.draw(surface, self.x, self.y, self.last_move_frame, offset)
 
     def draw_player_anim(self, spritesheet, surface, offset, start, end):
         spritesheet.draw(surface, self.x, self.y, spritesheet.index, offset)
