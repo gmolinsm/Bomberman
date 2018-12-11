@@ -148,7 +148,7 @@ def redraw_game_elements():
                     elements[i].draw_anim(elements[i].explosion, win, 0, 4)
 
     # Reference point
-    pygame.draw.rect(win, WHITE, players[0].rect)
+
 
 def text(surface, font, message, color):
     screen_text = font.render(message, True, color)
